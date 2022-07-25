@@ -1,5 +1,5 @@
 {
-  "name": "torus-metadata",
+  "name": "tkey-metadata",
   "version": "1.0.0",
   "description": "Torus metadata server",
   "main": "index.js",
