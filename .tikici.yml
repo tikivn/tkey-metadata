@@ -87,15 +87,6 @@ deployment_config:
               port: "5051"
       autoTls: true
     replicaCount: 1
-    volumes:
-      - name: tkey-metadata
-        secret:
-          defaultMode: 420
-          optional: false
-          secretName: tkey-metadata
-    volumeMounts:
-      - mountPath: "/app/config/uat"
-        name: tkey-metadata
     envFrom:
       - secretRef:
           name: env-tkey-metadata
@@ -132,15 +123,6 @@ deployment_config:
               port: "5051"
       autoTls: true
     replicaCount: 2
-    volumes:
-      - name: tkey-metadata
-        secret:
-          defaultMode: 420
-          optional: false
-          secretName: tkey-metadata
-    volumeMounts:
-      - mountPath: "/app/config/prod"
-        name: tkey-metadata
     envFrom:
       - secretRef:
           name: env-tkey-metadata
