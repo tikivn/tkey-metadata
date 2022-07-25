@@ -14,4 +14,6 @@ RUN apk add --no-cache --virtual .gyp \
 
 COPY . .
 
+EXPOSE 5051
+
 CMD npm run build && npm run prod
