@@ -3,18 +3,11 @@ config:
   slack_notify: true
   slack_channel: tkey-metadata-ci
 jobs:
-  build_docker_dev:
-    steps:
-      - build_image:
-          dockerfile: ./Dockerfile.dev
-  build_docker_prod:
+  build_docker:
     steps:
       - build_image:
           dockerfile: ./Dockerfile
-  publish_docker_dev:
-    steps:
-      - push_image
-  publish_docker_prod:
+  publish_docker:
     steps:
       - push_image
   deploy_dev:
@@ -36,40 +29,30 @@ jobs:
 workflows:
   jenkins_pipeline:
     jobs:
-      - build_docker_dev:
+      - build_docker:
           filters:
             branches:
               only:
                 - dev
-      - build_docker_prod:
-          filters:
-            branches:
-              only:
                 - master
-      - publish_docker_dev:
+      - publish_docker:
           requires:
-            - build_docker_dev
+            - build_docker
           filters:
             branches:
               only:
                 - dev
-      - publish_docker_prod:
-          requires:
-            - build_docker_prod
-          filters:
-            branches:
-              only:
                 - master
       - deploy_dev:
           requires:
-            - publish_docker_dev
+            - publish_docker
           filters:
             branches:
               only:
                 - dev
       - deploy_prod:
           requires:
-            - publish_docker_prod
+            - publish_docker
           filters:
             branches:
               only:

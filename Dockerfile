@@ -10,7 +10,7 @@ RUN apk add --no-cache --virtual .gyp \
         python3 \
         make \
         g++ \
-        && npm ci && apk del .gyp
+        && npm install && apk del .gyp
 
 COPY . .
 
