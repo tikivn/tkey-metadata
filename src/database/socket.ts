@@ -5,7 +5,7 @@ import log from "loglevel";
 import { Server } from "socket.io";
 
 import { REDIS_NAME_SPACE } from "../utils";
-import redis from "./redis";
+import redis, { tryAuth } from "./redis";
 
 export function setupSocketIo(http: HttpServer): Server {
   const io = new Server(http, {
@@ -17,16 +17,24 @@ export function setupSocketIo(http: HttpServer): Server {
     },
   });
 
-  const subClient = redis.duplicate();
-
-  Promise.all([redis.connect(), subClient.connect()])
+  Promise.all([tryAuth()])
     .then(() => {
-      io.adapter(createAdapter(redis, subClient));
-      log.debug("connected socket to redis");
+      const subClient = redis.duplicate();
+
+      Promise.all([redis.connect(), subClient.connect()])
+        .then(() => {
+          io.adapter(createAdapter(redis, subClient));
+          log.debug("connected socket to redis");
+          return null;
+        })
+        .catch((err) => {
+          log.error(err, "unable to connect to redis");
+        });
+
       return null;
     })
-    .catch((err) => {
-      log.error(err, "unable to connect to redis");
+    .catch((e) => {
+      log.error(e, "unable to tryAuth");
     });
 
   return io;
