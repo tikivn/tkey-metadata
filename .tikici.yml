@@ -66,17 +66,17 @@ deployment_config:
       successThreshold: 3
       timeoutSeconds: 2
       httpGet:
-        path: /
+        path: /health
         port: 5051
         scheme: HTTP
     livenessProbe:
       failureThreshold: 2
       initialDelaySeconds: 10
       periodSeconds: 2
-      successThreshold: 1
+      successThreshold: 3
       timeoutSeconds: 2
       httpGet:
-        path: /
+        path: /health
         port: 5051
         scheme: HTTP
     ingress:
@@ -102,17 +102,17 @@ deployment_config:
       successThreshold: 3
       timeoutSeconds: 2
       httpGet:
-        path: /
+        path: /health
         port: 5051
         scheme: HTTP
     livenessProbe:
       failureThreshold: 2
       initialDelaySeconds: 10
       periodSeconds: 2
-      successThreshold: 1
+      successThreshold: 3
       timeoutSeconds: 2
       httpGet:
-        path: /
+        path: /health
         port: 5051
         scheme: HTTP
     ingress:
