@@ -30,15 +30,20 @@ router.post(
     try {
       let value: string;
       try {
+        if (!redis.isReady && !redis.isOpen) await redis.connect();
         value = await redis.get(pubKey);
       } catch (error) {
         log.warn("redis get failed", error);
+      } finally {
+        if (redis.isReady || redis.isOpen) await redis.disconnect();
       }
 
       if (!value) {
         try {
           const id = randomID();
+          if (!redis.isReady && !redis.isOpen) await redis.connect();
           await redis.setEx(pubKey, REDIS_LOCK_TIMEOUT, id);
+          if (redis.isReady || redis.isOpen) await redis.disconnect();
           return res.json({ status: 1, id });
         } catch (error) {
           log.warn("redis set failed", error);
@@ -71,9 +76,12 @@ router.post(
 
       let value: string;
       try {
+        if (!redis.isReady && !redis.isOpen) await redis.connect();
         value = await redis.get(key);
       } catch (error) {
         log.warn("redis get failed", error);
+      } finally {
+        if (redis.isReady || redis.isOpen) await redis.disconnect();
       }
 
       if (!value) {
@@ -83,7 +91,9 @@ router.post(
       }
       if (value === id) {
         try {
+          if (!redis.isReady && !redis.isOpen) await redis.connect();
           await redis.del(key);
+          if (redis.isReady || redis.isOpen) await redis.disconnect();
           return res.json({ status: 1 });
         } catch (error) {
           log.warn("redis delete failed", error);
