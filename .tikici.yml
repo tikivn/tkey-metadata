@@ -59,26 +59,6 @@ workflows:
                 - master
 deployment_config:
   dev:
-    readinessProbe:
-      failureThreshold: 2
-      initialDelaySeconds: 10
-      periodSeconds: 2
-      successThreshold: 3
-      timeoutSeconds: 2
-      httpGet:
-        path: /health
-        port: 5051
-        scheme: HTTP
-    livenessProbe:
-      failureThreshold: 2
-      initialDelaySeconds: 10
-      periodSeconds: 2
-      successThreshold: 3
-      timeoutSeconds: 2
-      httpGet:
-        path: /health
-        port: 5051
-        scheme: HTTP
     ingress:
       hosts:
         - host: tkey-metadata.dev.tiki.services
@@ -109,7 +89,7 @@ deployment_config:
       failureThreshold: 2
       initialDelaySeconds: 10
       periodSeconds: 2
-      successThreshold: 3
+      successThreshold: 1
       timeoutSeconds: 2
       httpGet:
         path: /health
