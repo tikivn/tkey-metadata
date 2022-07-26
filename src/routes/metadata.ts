@@ -73,12 +73,12 @@ router.post(
       const key = constructKey(pubKeyX, pubKeyY, namespace);
       let value: string;
       try {
-        if (!redis.isReady && !redis.isOpen) await redis.connect();
+        await redis.connect();
         value = await redis.get(key);
       } catch (error) {
         log.warn("redis get failed", error);
       } finally {
-        if (redis.isReady || redis.isOpen) await redis.disconnect();
+        await redis.disconnect();
       }
 
       if (!value) {
@@ -122,12 +122,12 @@ router.post(
       });
 
       try {
-        if (!redis.isReady && !redis.isOpen) await redis.connect();
+        await redis.connect();
         await redis.setEx(key, REDIS_TIMEOUT, data);
       } catch (error) {
         log.warn("redis set failed", error);
       } finally {
-        if (redis.isReady || redis.isOpen) await redis.disconnect();
+        await redis.disconnect();
       }
 
       const ipfsResult = await getHashAndWriteAsync({ [tableName]: [{ key, value: data }] });
@@ -180,12 +180,12 @@ router.post(
       }, {} as Record<string, string>);
 
       try {
-        if (!redis.isReady && !redis.isOpen) await redis.connect();
+        await redis.connect();
         await Promise.all(Object.keys(redisData).map((x) => redis.setEx(x, REDIS_TIMEOUT, redisData[x])));
       } catch (error) {
         log.warn("redis bulk set failed", error);
       } finally {
-        if (redis.isReady || redis.isOpen) await redis.disconnect();
+        await redis.disconnect();
       }
 
       const ipfsResult = await getHashAndWriteAsync(requiredData);
@@ -261,12 +261,12 @@ router.post(
       await Promise.all(Object.keys(totalBatchesPerTable).map((x: DBTableName) => insertDataInBatchForTable(x, totalBatchesPerTable[x])));
 
       try {
-        if (!redis.isReady && !redis.isOpen) await redis.connect();
+        await redis.connect();
         await Promise.all(Object.keys(redisData).map((x) => redis.setEx(x, REDIS_TIMEOUT, redisData[x])));
       } catch (error) {
         log.warn("redis bulk set failed", error);
       } finally {
-        if (redis.isReady || redis.isOpen) await redis.disconnect();
+        await redis.disconnect();
       }
 
       const requiredData = Object.keys(totalBatchesPerTable).reduce((acc: Record<DBTableName, DataInsertType[]>, x: DBTableName) => {
@@ -308,12 +308,12 @@ if (process.env.NODE_ENV === "development") {
         });
 
         try {
-          if (!redis.isReady && !redis.isOpen) await redis.connect();
+          await redis.connect();
           await redis.setEx(key, REDIS_TIMEOUT, "<v1>");
         } catch (error) {
           log.warn("redis set failed", error);
         } finally {
-          if (redis.isReady || redis.isOpen) await redis.disconnect();
+          await redis.disconnect();
         }
 
         return res.json({});
@@ -357,12 +357,12 @@ router.post(
       // check if it already exists
       let oldValue: string;
       try {
-        if (!redis.isReady && !redis.isOpen) await redis.connect();
+        await redis.connect();
         oldValue = await redis.get(oldKey);
       } catch (error) {
         log.warn("redis get failed", error);
       } finally {
-        if (redis.isReady || redis.isOpen) await redis.disconnect();
+        await redis.disconnect();
       }
 
       if (!oldValue) {
@@ -384,12 +384,12 @@ router.post(
       let ipfs: string[];
 
       try {
-        if (!redis.isReady && !redis.isOpen) await redis.connect();
+        await redis.connect();
         nonce = await redis.get(key);
       } catch (error) {
         log.warn("redis get failed", error);
       } finally {
-        if (redis.isReady || redis.isOpen) await redis.disconnect();
+        await redis.disconnect();
       }
 
       if (!nonce) {
@@ -401,12 +401,12 @@ router.post(
 
       if (nonce) {
         try {
-          if (!redis.isReady && !redis.isOpen) await redis.connect();
+          await redis.connect();
           pubNonce = await redis.get(keyForPubNonce);
         } catch (error) {
           log.warn("redis get failed", error);
         } finally {
-          if (redis.isReady || redis.isOpen) await redis.disconnect();
+          await redis.disconnect();
         }
 
         if (!pubNonce) {
@@ -440,13 +440,13 @@ router.post(
             { key: keyForPubNonce, value: pubNonceStr },
           ],
         ]);
-        if (!redis.isReady && !redis.isOpen) await redis.connect();
+        await redis.connect();
         [ipfs] = await Promise.all([
           getHashAndWriteAsync({ [tableName]: [{ key, value: pubNonceStr }] }),
           redis.setEx(key, REDIS_TIMEOUT, nonce).catch((error) => log.warn("redis set failed", error)),
           redis.setEx(keyForPubNonce, REDIS_TIMEOUT, pubNonceStr).catch((error) => log.warn("redis set failed", error)),
         ]);
-        if (redis.isReady || redis.isOpen) await redis.disconnect();
+        await redis.disconnect();
       }
 
       const returnResponse = {

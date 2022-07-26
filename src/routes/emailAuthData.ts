@@ -22,9 +22,9 @@ router.post(
       const { encAuthData, instancePubKey } = req.body;
       const { io } = req;
       const key = `${REDIS_NAME_SPACE}_${instancePubKey}`;
-      if (!redis.isReady && !redis.isOpen) await redis.connect();
+      await redis.connect();
       const dataExist = await redis.get(key);
-      if (redis.isReady || redis.isOpen) await redis.disconnect();
+      await redis.disconnect();
       if (dataExist) {
         return res.status(400).json({ success: false, message: "Link has been used already" });
       }
@@ -32,9 +32,9 @@ router.post(
         instancePubKey,
         encAuthData,
       };
-      if (!redis.isReady && !redis.isOpen) await redis.connect();
+      await redis.connect();
       await redis.setEx(key, REDIS_TIMEOUT, JSON.stringify(data));
-      if (redis.isReady || redis.isOpen) await redis.disconnect();
+      await redis.disconnect();
 
       io.to(instancePubKey).emit("success", JSON.parse(encAuthData));
 
