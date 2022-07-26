@@ -7,7 +7,7 @@ import log from "loglevel";
 import multer from "multer";
 
 import { getHashAndWriteAsync } from "../database/ipfs";
-import { knexRead, knexWrite } from "../database/knex";
+import { asyncKnex } from "../database/knex";
 import redis from "../database/redis";
 import {
   serializeStreamBody,
@@ -82,6 +82,8 @@ router.post(
       }
 
       if (!value) {
+        const knexRead = await asyncKnex();
+
         const data = await knexRead(tableName).where({ key }).orderBy("created_at", "desc").orderBy("id", "desc").first();
         value = data?.value || "";
       }
@@ -116,6 +118,8 @@ router.post(
       }
 
       const key = constructKey(pubKeyX, pubKeyY, namespace);
+      const knexWrite = await asyncKnex();
+
       await knexWrite(tableName).insert({
         key,
         value: data,
@@ -165,6 +169,8 @@ router.post(
         return acc;
       }, {} as Record<keyof DBTableName, DataInsertType[]>);
 
+      const knexWrite = await asyncKnex();
+
       await Promise.all(Object.keys(requiredData).map((x) => knexWrite(x).insert(requiredData[x])));
 
       const redisData = shares.reduce((acc: Record<string, string>, x) => {
@@ -199,6 +205,8 @@ router.post(
 
 // data must be array of arrays with each array lesser than MAX_BATCH_SIZE
 async function insertDataInBatchForTable(tableName: DBTableName, data: DataInsertType[][]) {
+  const knexWrite = await asyncKnex();
+
   return knexWrite.transaction(async (trx) => {
     for (const batch of data) {
       await knexWrite(tableName).insert(batch).transacting(trx);
@@ -302,6 +310,8 @@ if (process.env.NODE_ENV === "development") {
 
         const key = constructKey(pubKeyX, pubKeyY, NAMESPACES.nonceV2);
 
+        const knexWrite = await asyncKnex();
+
         await knexWrite(tableName).insert({
           key,
           value: "<v1>",
@@ -366,6 +376,8 @@ router.post(
       }
 
       if (!oldValue) {
+        const knexRead = await asyncKnex();
+
         const oldRetrievedNonce = await knexRead(tableName).where({ key: oldKey }).orderBy("created_at", "desc").orderBy("id", "desc").first();
         // i want a nil value here
         oldValue = oldRetrievedNonce?.value || undefined;
@@ -393,6 +405,8 @@ router.post(
       }
 
       if (!nonce) {
+        const knexRead = await asyncKnex();
+
         const newRetrievedNonce = await knexRead(tableName).where({ key }).orderBy("created_at", "desc").orderBy("id", "desc").first();
         nonce = newRetrievedNonce?.value || undefined;
       }
@@ -410,6 +424,8 @@ router.post(
         }
 
         if (!pubNonce) {
+          const knexRead = await asyncKnex();
+
           const retrievedPubNonce = await knexRead(tableName)
             .where({ key: keyForPubNonce })
             .orderBy("created_at", "desc")

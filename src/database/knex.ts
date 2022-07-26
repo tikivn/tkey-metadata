@@ -1,21 +1,27 @@
 import { knex } from "knex";
 import { attachOnDuplicateUpdate } from "knex-on-duplicate-update";
 
+import { up } from "./creation/20220726_initial_setup";
 import config from "./knexfile";
 
-let dbConfig1 = config.development;
-let dbConfig2 = config.development;
+let dbConfig = config.development;
 
 if (process.env.NODE_ENV === "production") {
-  dbConfig1 = config.productionRead;
-  dbConfig2 = config.productionWrite;
+  dbConfig = config.productionWrite;
 } else if (process.env.NODE_ENV === "staging") {
-  dbConfig1 = config.stagingRead;
-  dbConfig2 = config.stagingWrite;
+  dbConfig = config.stagingWrite;
 }
-const knexRead = knex(dbConfig1);
-const knexWrite = knex(dbConfig2);
+
+const _knex = knex(dbConfig);
+let _createdKnex = false;
 
 attachOnDuplicateUpdate();
 
-export { knexRead, knexWrite };
+export const asyncKnex = async () => {
+  if (!_createdKnex) {
+    _createdKnex = true;
+    await up(_knex);
+  }
+
+  return _knex;
+};
