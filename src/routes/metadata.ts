@@ -75,9 +75,9 @@ router.post(
       try {
         await redisConnect();
         value = await redis.get(key);
-        await redisDisconnect();
       } catch (error) {
         log.warn("redis get failed", error);
+      } finally {
         await redisDisconnect();
       }
 
