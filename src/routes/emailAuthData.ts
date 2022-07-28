@@ -2,7 +2,7 @@ import { celebrate, Joi, Segments } from "celebrate";
 import express from "express";
 import log from "loglevel";
 
-import redis from "../database/redis";
+import redis, { redisConnect, redisDisconnect } from "../database/redis";
 import { getError, REDIS_NAME_SPACE } from "../utils";
 
 const router = express.Router();
@@ -22,9 +22,9 @@ router.post(
       const { encAuthData, instancePubKey } = req.body;
       const { io } = req;
       const key = `${REDIS_NAME_SPACE}_${instancePubKey}`;
-      await redis.connect();
+      await redisConnect();
       const dataExist = await redis.get(key);
-      await redis.disconnect();
+      await redisDisconnect();
       if (dataExist) {
         return res.status(400).json({ success: false, message: "Link has been used already" });
       }
@@ -32,9 +32,9 @@ router.post(
         instancePubKey,
         encAuthData,
       };
-      await redis.connect();
+      await redisConnect();
       await redis.setEx(key, REDIS_TIMEOUT, JSON.stringify(data));
-      await redis.disconnect();
+      await redisDisconnect();
 
       io.to(instancePubKey).emit("success", JSON.parse(encAuthData));
 

@@ -2,7 +2,7 @@ import { celebrate, Joi, Segments } from "celebrate";
 import express, { Request, Response } from "express";
 import log from "loglevel";
 
-import redis from "../database/redis";
+import redis, { redisConnect, redisDisconnect } from "../database/redis";
 import { validateLockData } from "../middleware";
 import { getError, randomID, REDIS_LOCK_TIMEOUT } from "../utils";
 
@@ -30,20 +30,20 @@ router.post(
     try {
       let value: string;
       try {
-        await redis.connect();
+        await redisConnect();
         value = await redis.get(pubKey);
       } catch (error) {
         log.warn("redis get failed", error);
       } finally {
-        await redis.disconnect();
+        await redisDisconnect();
       }
 
       if (!value) {
         try {
           const id = randomID();
-          await redis.connect();
+          await redisConnect();
           await redis.setEx(pubKey, REDIS_LOCK_TIMEOUT, id);
-          await redis.disconnect();
+          await redisDisconnect();
           return res.json({ status: 1, id });
         } catch (error) {
           log.warn("redis set failed", error);
@@ -76,12 +76,12 @@ router.post(
 
       let value: string;
       try {
-        await redis.connect();
+        await redisConnect();
         value = await redis.get(key);
       } catch (error) {
         log.warn("redis get failed", error);
       } finally {
-        await redis.disconnect();
+        await redisDisconnect();
       }
 
       if (!value) {
@@ -91,9 +91,9 @@ router.post(
       }
       if (value === id) {
         try {
-          await redis.connect();
+          await redisConnect();
           await redis.del(key);
-          await redis.disconnect();
+          await redisDisconnect();
           return res.json({ status: 1 });
         } catch (error) {
           log.warn("redis delete failed", error);
