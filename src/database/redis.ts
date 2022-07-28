@@ -20,13 +20,17 @@ client.on("ready", () => {
 export default client;
 
 export const redisConnect = async () => {
-  if (/*! client.isReady && */ !client.isOpen) {
+  try {
     await client.connect();
+  } catch (e) {
+    log.error(e);
   }
 };
 
 export const redisDisconnect = async () => {
-  if (/* client.isReady || */ client.isOpen) {
+  try {
     await client.disconnect();
+  } catch (e) {
+    log.error(e);
   }
 };
